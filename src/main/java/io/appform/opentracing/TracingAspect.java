@@ -50,12 +50,8 @@ public class TracingAspect {
 
         final String parameterString = getParameterString(options, methodSignature, joinPoint,
                 className, methodName);
-
-        log.trace("Called for class: {} method: {} parameterString: {}", className, methodName, parameterString);
-
         Span span = null;
         Scope scope = null;
-
         try {
             final Tracer tracer = TracingHandler.getTracer();
             span = TracingHandler.startSpan(tracer, methodName, className, parameterString);
@@ -102,23 +98,21 @@ public class TracingAspect {
         final List<String> paramValues
                 = IntStream.range(0, methodSignature.getMethod().getParameterCount())
                 .mapToObj(i -> {
-                    final TracingTerm metricTerm = methodSignature.getMethod()
-                            .getParameters()[i].getAnnotation(TracingTerm.class);
-                    if (metricTerm == null) {
+                    final TracingParameter tracingParameter = methodSignature.getMethod()
+                            .getParameters()[i].getAnnotation(TracingParameter.class);
+                    if (tracingParameter == null) {
                         return null;
                     }
                     final String paramValueStr = convertToString(joinPoint.getArgs()[i]).trim();
                     boolean matches = VALID_PARAM_VALUE_PATTERN.matcher(paramValueStr).matches();
-                    return matches ?
-                            tracingOptions.getCaseFormatConverter().convert(paramValueStr) : "";
+                    return matches ? paramValueStr : "";
                 })
                 .filter(Objects::nonNull)
+                .filter(value -> !Strings.isNullOrEmpty(value))
                 .collect(Collectors.toList());
 
-        if (paramValues
-                .stream()
-                .noneMatch(Strings::isNullOrEmpty)) {
-            return Joiner.on(TracingConstants.SPAN_TAG_DELIMITER).join(paramValues);
+        if (!paramValues.isEmpty()) {
+            return Joiner.on(TracingConstants.PARAMETER_DELIMITER).join(paramValues);
         }
 
         return null;

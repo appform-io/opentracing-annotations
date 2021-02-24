@@ -46,9 +46,10 @@ class TracingAspectTest {
     @Test
     void testTracingWhenMethodAndClassNameAreOverloaded() {
         mockTracer.activateSpan(mockTracer.buildSpan("test").start());
+        TracingManager.initialize(new TracingOptions.TracingOptionsBuilder().parameterCaptureEnabled(true).build());
         Assertions.assertNotNull(GlobalTracer.get().activeSpan());
         final TestAnnotation testAnnotation = new TestAnnotation();
-        Assertions.assertDoesNotThrow(() -> testAnnotation.myFunction(1, 2));
+        Assertions.assertDoesNotThrow(() -> testAnnotation.overloadedFunction("test", 2));
         Assertions.assertNotNull(GlobalTracer.get().activeSpan());
 
         List<MockSpan> finishedSpans = mockTracer.finishedSpans();
@@ -130,12 +131,12 @@ class TracingAspectTest {
         }
 
         @TracingAnnotation(method = "overloadedMethodName", className = "OverloadedClassName")
-        private void myFunction(int x, int y) {
+        private void overloadedFunction(String x, int y) {
             System.out.println("Val: " + Objects.toString(x + y));
         }
 
         @TracingAnnotation()
-        private void parameterValidFunction(@TracingTerm String x, @TracingTerm String y) {
+        private void parameterValidFunction(@TracingParameter String x, @TracingParameter String y) {
             System.out.println(String.format("x = %s, y = %s", x, y));
         }
 
@@ -145,7 +146,7 @@ class TracingAspectTest {
         }
 
         @TracingAnnotation()
-        private void invalidArgsFunction(@TracingTerm MockTracer mockTracer) {
+        private void invalidArgsFunction(@TracingParameter MockTracer mockTracer) {
             System.out.println("Invalid args");
         }
     }

@@ -14,12 +14,12 @@
     <inceptionYear>2021</inceptionYear>
 
 
-    <!--<scm>-->
-    <!--<connection>scm:git:https://github.com/appform-io/opentracing-annotations</connection>-->
-    <!--<developerConnection>scm:git:https://github.com/appform-io/opentracing-annotations</developerConnection>-->
-    <!--<tag>HEAD</tag>-->
-    <!--<url>https://github.com/appform-io/opentracing-annotations</url>-->
-    <!--</scm>-->
+    <scm>
+        <connection>scm:git:https://github.com/appform-io/opentracing-annotations.git</connection>
+        <developerConnection>scm:git:https://github.com/appform-io/opentracing-annotations.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/appform-io/opentracing-annotations.git</url>
+    </scm>
 
     <licenses>
         <license>
@@ -30,15 +30,27 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <id>Kanikakhetawat</id>
+            <name>Kanika Khetawat</name>
+            <email>kanikakhetawat.kk@gmail.com</email>
+            <roles>
+                <role>owner</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
     <issueManagement>
         <system>GitHub Issues</system>
         <url>https://github.com/appform-io/opentracing-annotations/issues</url>
     </issueManagement>
 
-    <!--<ciManagement>-->
-    <!--<system>Travis CI</system>-->
-    <!--<url>https://travis-ci.org/santanusinha/function-metrics</url>-->
-    <!--</ciManagement>-->
+    <ciManagement>
+        <system>Travis CI</system>
+        <url>https://travis-ci.org/github/appform-io/opentracing-annotations</url>
+    </ciManagement>
 
     <distributionManagement>
         <snapshotRepository>
@@ -50,6 +62,7 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
