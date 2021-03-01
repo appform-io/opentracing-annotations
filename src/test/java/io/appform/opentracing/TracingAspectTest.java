@@ -21,15 +21,11 @@ class TracingAspectTest {
     private static MockTracer mockTracer = new MockTracer();
 
     @BeforeAll
-    static void beforeAll() {
-        try {
-            Field globalTracerField = GlobalTracer.class.getDeclaredField("tracer");
-            globalTracerField.setAccessible(true);
-            globalTracerField.set(null, mockTracer);
-            globalTracerField.setAccessible(false);
-        } catch (Exception e) {
-            throw new RuntimeException("Error reflecting globalTracer: " + e.getMessage(), e);
-        }
+    static void beforeAll() throws NoSuchFieldException, IllegalAccessException {
+        Field globalTracerField = GlobalTracer.class.getDeclaredField("tracer");
+        globalTracerField.setAccessible(true);
+        globalTracerField.set(null, mockTracer);
+        globalTracerField.setAccessible(false);
     }
 
     @BeforeEach
