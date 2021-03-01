@@ -3,11 +3,13 @@ package io.appform.opentracing;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +20,14 @@ class TracingAspectTest {
 
     private static MockTracer mockTracer = new MockTracer();
 
+    @BeforeAll
+    static void beforeAll() throws NoSuchFieldException, IllegalAccessException {
+        Field globalTracerField = GlobalTracer.class.getDeclaredField("tracer");
+        globalTracerField.setAccessible(true);
+        globalTracerField.set(null, mockTracer);
+        globalTracerField.setAccessible(false);
+    }
+
     @BeforeEach
     void setup() {
         GlobalTracer.registerIfAbsent(mockTracer);
@@ -26,6 +36,7 @@ class TracingAspectTest {
     @AfterEach
     void cleanup() {
         mockTracer.reset();
+
     }
 
     @Test
@@ -35,7 +46,6 @@ class TracingAspectTest {
         final TestAnnotation testAnnotation = new TestAnnotation();
         Assertions.assertThrows(RuntimeException.class, testAnnotation::throwException);
         Assertions.assertNotNull(GlobalTracer.get().activeSpan());
-
         List<MockSpan> finishedSpans = mockTracer.finishedSpans();
         Assertions.assertEquals(1, finishedSpans.size());
         MockSpan finishedSpan = finishedSpans.get(0);
