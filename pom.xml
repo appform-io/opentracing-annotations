@@ -7,7 +7,7 @@
 
     <groupId>io.appform.opentracing.annotations</groupId>
     <artifactId>opentracing-annotations</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>OpenTracing Annotations</name>
     <url>https://github.com/appform-io/opentracing-annotations</url>
     <description>Annotation based function level tracing</description>
@@ -165,6 +165,17 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
             </plugin>
         </plugins>
     </build>
