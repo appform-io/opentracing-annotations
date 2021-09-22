@@ -43,8 +43,9 @@ class TracingHandlerTest {
         mockTracer.activateSpan(mockTracer.buildSpan("test").start());
         final String methodName = "test";
         final String className = "testClass";
-        Assertions.assertNull(TracingHandler.startSpan(null, null, "test", null));
-        Span span = TracingHandler.startSpan(GlobalTracer.get(), methodName, className, "test");
+        Assertions.assertNull(TracingHandler.startSpan(null, new FunctionData(null, null),
+                "test"));
+        Span span = TracingHandler.startSpan(GlobalTracer.get(), new FunctionData(className, methodName), "test");
         Assertions.assertNotNull(span);
         Assertions.assertTrue(span instanceof MockSpan);
         MockSpan mockSpan = (MockSpan) span;
