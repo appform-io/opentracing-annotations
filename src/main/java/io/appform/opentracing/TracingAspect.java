@@ -5,10 +5,6 @@ import com.google.common.base.Strings;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
@@ -18,6 +14,13 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static io.appform.opentracing.TracingConstants.VALID_PARAM_VALUE_PATTERN;
 
 /**
@@ -26,6 +29,9 @@ import static io.appform.opentracing.TracingConstants.VALID_PARAM_VALUE_PATTERN;
 @Aspect
 public class TracingAspect {
     private static final Logger log = LoggerFactory.getLogger(TracingAspect.class.getSimpleName());
+
+    private final Map<String, FunctionData> paramCache = new ConcurrentHashMap<>();
+
 
     @Pointcut("@annotation(io.appform.opentracing.TracingAnnotation)")
     public void tracingAnnotationCalled() {
@@ -40,21 +46,21 @@ public class TracingAspect {
     @Around("tracingAnnotationCalled() && anyFunctionCalled()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         final Signature callSignature = joinPoint.getSignature();
-        final MethodSignature methodSignature = (MethodSignature) callSignature;
-        final TracingAnnotation tracingAnnotation = methodSignature.getMethod().getAnnotation(TracingAnnotation.class);
-
-        final String className = getClassName(tracingAnnotation, callSignature);
-        final String methodName = getMethodName(tracingAnnotation, callSignature);
-
         final TracingOptions options = TracingManager.getTracingOptions();
+        final MethodSignature methodSignature = (MethodSignature) callSignature;
+
+        final FunctionData functionData = cacheDisabled(options)
+                ? getFunctionData(callSignature, methodSignature)
+                : paramCache.computeIfAbsent(callSignature.toLongString(), key -> getFunctionData(callSignature, methodSignature));
 
         final String parameterString = getParameterString(options, methodSignature, joinPoint,
-                className, methodName);
+                functionData.getClassName(), functionData.getMethodName());
+
         Span span = null;
         Scope scope = null;
         try {
             final Tracer tracer = TracingHandler.getTracer();
-            span = TracingHandler.startSpan(tracer, methodName, className, parameterString);
+            span = TracingHandler.startSpan(tracer, functionData, parameterString);
             scope = TracingHandler.startScope(tracer, span);
             final Object response = joinPoint.proceed();
             TracingHandler.addSuccessTagToSpan(span);
@@ -65,6 +71,14 @@ public class TracingAspect {
         } finally {
             TracingHandler.closeSpanAndScope(span, scope);
         }
+    }
+
+    private FunctionData getFunctionData(final Signature callSignature,
+                                         final MethodSignature methodSignature) {
+        final TracingAnnotation tracingAnnotation = methodSignature.getMethod().getAnnotation(TracingAnnotation.class);
+        final String className = getClassName(tracingAnnotation, callSignature);
+        final String methodName = getMethodName(tracingAnnotation, callSignature);
+        return new FunctionData(className, methodName);
     }
 
     private String getClassName(final TracingAnnotation tracingAnnotation,
@@ -130,4 +144,7 @@ public class TracingAspect {
         return "";
     }
 
+    private boolean cacheDisabled(final TracingOptions options) {
+        return options != null && options.isDisableCacheOptimisation();
+    }
 }

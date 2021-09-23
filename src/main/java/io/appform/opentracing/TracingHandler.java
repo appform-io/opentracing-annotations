@@ -25,8 +25,7 @@ public class TracingHandler {
     }
 
     static Span startSpan(final Tracer tracer,
-                          final String methodName,
-                          final String className,
+                          final FunctionData functionData,
                           final String parameterString) {
         try {
             if (tracer == null) {
@@ -36,10 +35,10 @@ public class TracingHandler {
             if (parentSpan == null) {
                 return null;
             }
-            Span span = tracer.buildSpan("method:" + methodName)
+            Span span = tracer.buildSpan("method:" + functionData.getMethodName())
                     .asChildOf(parentSpan)
-                    .withTag(TracingConstants.CLASS_NAME_TAG, className)
-                    .withTag(TracingConstants.METHOD_NAME_TAG, methodName)
+                    .withTag(TracingConstants.CLASS_NAME_TAG, functionData.getClassName())
+                    .withTag(TracingConstants.METHOD_NAME_TAG, functionData.getMethodName())
                     .start();
             if (!Strings.isNullOrEmpty(parameterString)) {
                 span.setTag(TracingConstants.PARAMETER_STRING_TAG, parameterString);
