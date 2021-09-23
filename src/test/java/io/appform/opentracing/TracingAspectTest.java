@@ -245,7 +245,7 @@ class TracingAspectTest {
 
         @TracingAnnotation(method = "noArgsFunction")
         private void noArgsFunction() {
-            System.out.println("No args");
+            //Empty as needed
         }
 
         @TracingAnnotation()
